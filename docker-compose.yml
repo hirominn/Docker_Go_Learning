@@ -4,4 +4,6 @@ services:
         build: . # ①ビルドに使うDockerfileの場所
         tty: true # ②コンテナの永続化
         volumes:
-            - ./goapp:/go/src/goapp # ③マウントディレクトリ
+            - .:/go/src # ③マウントディレクトリ
+        ports: 
+            - "80:8080"
