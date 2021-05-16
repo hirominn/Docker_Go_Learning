@@ -1,9 +1,26 @@
 version: "3" # composeファイルのバージョン
+
+volumes:
+    goapp_mysql_vol:
+  
 services: 
     goapp: # サービス名
+        container_name: goapp
         build: ./goapp # ①ビルドに使うDockerfileの場所
         tty: true # ②コンテナの永続化
         volumes:
             - ./goapp:/go/src # ③マウントディレクトリ
         ports: 
             - "80:8080"
+        depends_on: 
+            - mysql
+
+    mysql:
+        container_name: mysql
+        build: ./mysql
+        volumes:
+        - goapp_mysql_vol:/var/lib/mysql:delegated
+        environment:
+        - MYSQL_ROOT_PASSWORD=test
+        ports:
+        - "3306:3306"        
