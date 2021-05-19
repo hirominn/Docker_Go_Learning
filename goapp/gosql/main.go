@@ -17,29 +17,22 @@ func main() {
 	}
 	defer db.Close()
 
-	var (
-		id   int
-		name string
-	)
+	stmt, err := db.Prepare("INSERT INTO items(name, price, created_at, updated_at) VALUES(?, ?, ?, ?)")
+	if err != nil {
+		log.Fatal(err)
+	}
+	res, err := stmt.Exec("Dolly", 120, "2013-10-01", "2013-10-01") //Queryとの違いに注意！
+	if err != nil {
+		log.Fatal(err)
+	}
+	lastId, err := res.LastInsertId()
+	if err != nil {
+		log.Fatal(err)
+	}
+	rowCnt, err := res.RowsAffected()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("ID = %d, affected = %d\n", lastId, rowCnt)
 
-	stmt, err := db.Prepare("select id, name from items where id = ?")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer stmt.Close()
-	rows, err := stmt.Query(1)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-	for rows.Next() {
-		err := rows.Scan(&id, &name)
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Println(id, name)
-	}
-	if err = rows.Err(); err != nil {
-		log.Fatal(err)
-	}
 }
