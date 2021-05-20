@@ -4,9 +4,11 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/VividCortex/mysqlerr"
+	"github.com/go-sql-driver/mysql"
 )
 
 func main() {
@@ -35,4 +37,22 @@ func main() {
 	}
 	log.Printf("ID = %d, affected = %d\n", lastId, rowCnt)
 
+	// 一般的に、他のプログラミング言語や外部ライブラリでは、SQLで空の結果となってもエラーや例外が発生しないことが多いが、 .QueryRow() では空の結果を考慮する必要がある
+	var name string
+	err = db.QueryRow("select name from items where id = ?", 10).Scan(&name)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			log.Printf("No row selected")
+		} else {
+			log.Fatal(err)
+		}
+	}
+	fmt.Println(name)
+
+	_, err_to_checknum := db.Query("SELECT someval FROM sometable")
+	if driverErr, ok := err_to_checknum.(*mysql.MySQLError); ok {
+		if driverErr.Number == mysqlerr.ER_ACCESS_DENIED_ERROR {
+
+		}
+	}
 }
