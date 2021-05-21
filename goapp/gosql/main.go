@@ -55,4 +55,59 @@ func main() {
 
 		}
 	}
+
+	var id int
+
+	select_stmt, err := db.Prepare("select id, name from items where price = ?")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer select_stmt.Close()
+	rows, err := select_stmt.Query(120)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		err := rows.Scan(&id, &name)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println(id, name)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	for rows.Next() {
+		var s sql.NullString
+		err := rows.Scan(&s)
+		// check err
+		if s.Valid { //未テスト
+			log.Println(s.String) // use s.String
+		} else {
+			log.Fatal(err) // NULL value
+		}
+	}
+
+	customers, err := db.Query(`
+		SELECT
+			name,
+			COALESCE(created_at, '') as otherField
+		FROM customers
+		WHERE id = ?
+	`, 1)
+
+	var created_at string
+
+	for customers.Next() {
+		err := customers.Scan(&name, &created_at)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println(name, created_at)
+		// ..
+		// If `other_field` was NULL, `ohterFIeld` is now an empty string. This works with other data types as well.
+	}
+
 }
